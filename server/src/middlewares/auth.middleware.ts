@@ -1,17 +1,9 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import User from "../modules/auth/auth.model";
 
-interface JwtPayload {
-  id: string;
-}
-
-export interface AuthRequest extends Request {
-  user?: any;
-}
-
 export const protect = async (
-  req: AuthRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
@@ -20,7 +12,7 @@ export const protect = async (
 
     if (
       req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
+      req.headers.authorization.startsWith("Bearer ")
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
@@ -35,9 +27,9 @@ export const protect = async (
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
-    ) as JwtPayload;
+    ) as jwt.JwtPayload;
 
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
       return res.status(401).json({
@@ -46,13 +38,13 @@ export const protect = async (
       });
     }
 
-    req.user = user;
+    (req as any).user = user;
 
     next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: "Invalid token",
+      message: "Invalid or expired token",
     });
   }
 };

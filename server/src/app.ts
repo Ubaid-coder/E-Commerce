@@ -7,6 +7,8 @@ import cookieParser from "cookie-parser";
 import healthRouter from "./routes/health.route";
 
 import authRouter from "./modules/auth/auth.route";
+import categoryRouter from "./modules/category/category.route";
+import productRouter from "./modules/product/product.route";
 
 const app: Application = express();
 
@@ -38,7 +40,14 @@ app.use(cookieParser());
  * Routes
  */
 app.use("/api/v1/health", healthRouter);
+// Authentication
 app.use("/api/v1/auth", authRouter);
+
+// Categories
+app.use("/api/v1/categories", categoryRouter);
+
+// Products
+app.use("/api/v1/products", productRouter);
 
 /**
  * 404 Route Handler

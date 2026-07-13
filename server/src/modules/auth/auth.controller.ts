@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { registerUser, loginUser } from "./auth.service";
-import { AuthRequest } from "../../middleware/auth.middleware";
+import { AuthRequest } from "../../middlewares/auth.middleware";
 
 export const register = async (req: Request, res: Response) => {
   try {
