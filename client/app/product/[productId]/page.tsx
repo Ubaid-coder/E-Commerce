@@ -107,7 +107,7 @@ export default function Product() {
           <div className="w-full max-w-[500px] mx-auto flex flex-col items-center px-4">
             <div className="rounded-xl shadow-lg overflow-hidden mb-4 w-full">
               <Image
-                src={noImageFound}
+                src={product?.images[0]||noImageFound}
                 alt="Selected product"
                 width={600}
                 height={600}

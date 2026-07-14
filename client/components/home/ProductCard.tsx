@@ -72,7 +72,7 @@ export default function ProductCard({ product }: { product: Product }) {
           <div className="aspect-square overflow-hidden bg-muted">
             {!imageError ? (
               <Image
-                src={ noProductImage}
+                src={product?.images[0] || noProductImage}
                 alt={product.name}
                 width={400}
                 height={400}
