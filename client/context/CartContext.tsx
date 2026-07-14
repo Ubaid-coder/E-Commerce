@@ -13,9 +13,9 @@ interface CartItem {
 interface CartContextProps {
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (name: number) => void;
+  removeFromCart: (name: string) => void;
   clearCart: () => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  updateQuantity: (id: string, quantity: number) => void;
 }
 
 const CartContext = createContext<CartContextProps | undefined>(undefined);

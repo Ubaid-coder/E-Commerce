@@ -1,5 +1,6 @@
 "use client";
 
+import noProductImage from '../../public/images/noProductImage.jpg'
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/context/CartContext";
@@ -8,14 +9,9 @@ import { Check, Eye, Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Product } from "@/types/product";
 
-interface Product {
-  id: number;
-  image: string;
-  name: string;
-  price: number;
-  category?: string;
-}
+
 
 export default function ProductCard({ product }: { product: Product }) {
   const [isLiked, setIsLiked] = useState(false);
@@ -37,7 +33,7 @@ export default function ProductCard({ product }: { product: Product }) {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: noProductImage,
       quantity: 1,
     });
 
@@ -72,11 +68,11 @@ export default function ProductCard({ product }: { product: Product }) {
           />
         </Button>
 
-        <Link href={`/product/${product.id}`} className="block relative">
+        <Link href={`/product/${product._id}`} className="block relative">
           <div className="aspect-square overflow-hidden bg-muted">
             {!imageError ? (
               <Image
-                src={product.image}
+                src={ noProductImage}
                 alt={product.name}
                 width={400}
                 height={400}

@@ -8,7 +8,7 @@ import Image from "next/image";
 
 interface CartItemProps {
   item: {
-    id: number;
+    id: string;
     name: string;
     price: number;
     image: string;
