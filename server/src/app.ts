@@ -9,6 +9,7 @@ import healthRouter from "./routes/health.route";
 import authRouter from "./modules/auth/auth.route";
 import categoryRouter from "./modules/category/category.route";
 import productRouter from "./modules/product/product.route";
+import orderRouter from "./modules/order/order.route";
 
 const app: Application = express();
 
@@ -48,6 +49,9 @@ app.use("/api/v1/categories", categoryRouter);
 
 // Products
 app.use("/api/v1/products", productRouter);
+
+// Orders
+app.use("/api/v1/orders", orderRouter);
 
 /**
  * 404 Route Handler
