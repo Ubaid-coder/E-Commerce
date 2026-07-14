@@ -7,8 +7,11 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
-import products from "@/data/products.json";
+import { Product } from "@/types/product";
+import { getProduct } from "@/services/product.service";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import noImageFound from '../../../public/images/NoImage.jpg'
 import {
   Check,
   Heart,
@@ -21,6 +24,8 @@ import {
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { retry } from "next/dist/compiled/@next/font/dist/google/retry";
+import { BloomLoader } from "@/components/Loader";
 
 export default function Product() {
   const { addToCart } = useCart();
@@ -31,11 +36,33 @@ export default function Product() {
   const [justAdded, setJustAdded] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
-  const product = products.find((p) => p.id === parseInt(productId as string));
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!product) {
-    return <ProductNotFound />;
+
+  useEffect(() => {
+
+    const fetchProduct = async () => {
+      try {
+        const response = await getProduct(productId as string);
+        
+        setProduct(response?.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProduct();
+   console.log(product)
+  }, [productId])
+
+  if (loading) {
+    return <BloomLoader />
   }
+  if (!product) {
+   return <ProductNotFound />;
+}
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -80,7 +107,7 @@ export default function Product() {
           <div className="w-full max-w-[500px] mx-auto flex flex-col items-center px-4">
             <div className="rounded-xl shadow-lg overflow-hidden mb-4 w-full">
               <Image
-                src={product.image}
+                src={noImageFound}
                 alt="Selected product"
                 width={600}
                 height={600}
