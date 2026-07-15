@@ -2,11 +2,11 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-interface CartItem {
-  id: number;
+export interface CartItem {
+  _id: string;
   name: string;
-  price: number;
   image: string;
+  price: number;
   quantity: number;
 }
 
@@ -35,12 +35,13 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [cart]);
 
   const addToCart = (item: CartItem) => {
+    
     setCart((prevCart) => {
-      const existingItem = prevCart.find((cartItem) => cartItem.id === item.id);
+      const existingItem = prevCart.find((cartItem) => cartItem._id === item._id);
 
       if (existingItem) {
         return prevCart.map((cartItem) =>
-          cartItem.id === item.id
+          cartItem._id === item._id
             ? { ...cartItem, quantity: cartItem.quantity + 1 }
             : cartItem
         );
@@ -50,8 +51,8 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     });
   };
 
-  const removeFromCart = (id: number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+  const removeFromCart = (id: string) => {
+    setCart((prevCart) => prevCart.filter((item) => item._id !== id));
   };
 
   const clearCart = () => {
@@ -59,10 +60,10 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.removeItem("cart");
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: string, quantity: number) => {
     setCart((prevCart) =>
       prevCart.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
+        item._id === id ? { ...item, quantity: Math.max(1, quantity) } : item
       )
     );
   };

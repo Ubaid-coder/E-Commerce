@@ -17,7 +17,7 @@ export default function AuthRoute({
   if (loading) return <BloomLoader />;
 
   if (isAuthenticated) {
-    router.replace("/");
+    router.push("/");
     return null;
   }
 

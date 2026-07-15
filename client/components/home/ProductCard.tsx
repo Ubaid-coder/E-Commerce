@@ -30,10 +30,10 @@ export default function ProductCard({ product }: { product: Product }) {
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     addToCart({
-      id: product.id,
+      _id: product._id,
       name: product.name,
       price: product.price,
-      image: noProductImage,
+      image: product.images[0] ,
       quantity: 1,
     });
 

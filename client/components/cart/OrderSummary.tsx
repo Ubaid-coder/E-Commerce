@@ -7,9 +7,12 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { CreditCard, Heart, Shield, Truck } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 
 export default function OrderSummary() {
-  const { cart } = useCart();
+const { cart, clearCart } = useCart();
+const router = useRouter();
 
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -19,6 +22,8 @@ export default function OrderSummary() {
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+
 
   return (
     <Card className="sticky top-4">
@@ -82,9 +87,11 @@ export default function OrderSummary() {
           className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
           asChild
         >
-          <Link href="/checkout" className="flex items-center gap-2">
+          <Link  href="/checkout" className="flex items-center gap-2">
             <CreditCard className="h-4 w-4" />
-            Proceed to Checkout
+          
+              Checkout
+          
           </Link>
         </Button>
 
