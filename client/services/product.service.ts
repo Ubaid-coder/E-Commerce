@@ -1,29 +1,26 @@
-import api from "./api";
-import { Product } from "@/types/product";
-
-interface ProductsResponse {
-  success: boolean;
-  results: number;
-  data: Product[];
-}
-
-interface ProductResponse {
-  success: boolean;
-  data: Product;
-}
+import api from './api'
 
 export const getProducts = async () => {
-  try {
-    const response = await api.get<ProductsResponse>("/products");
-
-    return response.data;
-  } catch (error) {
-    console.log(error)
-  }
+  const response = await api.get("/products");
+  return response.data;
 };
 
 export const getProduct = async (id: string) => {
-  const response = await api.get<ProductResponse>(`/products/${id}`);
+  const response = await api.get(`/products/${id}`);
+  return response.data;
+};
 
+export const createProduct = async (data: object) => {
+  const response = await api.post("/products", data);
+  return response.data;
+};
+
+export const updateProduct = async (id: string, data: object) => {
+  const response = await api.patch(`/products/${id}`, data);
+  return response.data;
+};
+
+export const deleteProduct = async (id: string) => {
+  const response = await api.delete(`/products/${id}`);
   return response.data;
 };

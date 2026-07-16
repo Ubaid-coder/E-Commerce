@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
 import BloomLoader from "../Loader";
+import { useEffect } from "react";
 
 export default function ProtectedRoute({
   children,
@@ -15,15 +16,18 @@ export default function ProtectedRoute({
 
   const router = useRouter();
 
+  useEffect(() => {
+    if (!loading && !isAuthenticated) router.replace("/login");
+  }, [loading, isAuthenticated, router])
 
   if (loading) {
     return <BloomLoader />;
   }
 
   if (!isAuthenticated) {
-    router.replace("/login");
-    return null;
+    <BloomLoader />
+
   }
 
-  return children;
+  return <>{children}</>;
 }
