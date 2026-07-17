@@ -25,7 +25,7 @@ export const updateCategory = async (
     description?: string;
   }
 ) => {
-  const response = await api.put(`/categories/${id}`, data);
+  const response = await api.patch(`/categories/${id}`, data);
   return response.data;
 };
 
