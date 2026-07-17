@@ -4,7 +4,8 @@ import {
   getMyOrders,
   getOrderById,
   getAllOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  customerOrder
 } from "./order.service";
 
 export const create = async (req: Request, res: Response) => {
@@ -100,6 +101,23 @@ export const updateorderStatus = async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(400).json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Something went wrong",
+    });
+  }
+};
+
+export const getCustomerOrder = async (req: Request, res: Response) => {
+  try {
+    const order = await customerOrder(req?.params?.id);
+
+    res.status(200).json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    res.status(404).json({
       success: false,
       message:
         error instanceof Error ? error.message : "Something went wrong",

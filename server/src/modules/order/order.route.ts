@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   create,
   getAllorders,
+  getCustomerOrder,
   getOneOrder,
   myOrders,
   updateorderStatus,
@@ -13,11 +14,11 @@ const router = Router();
 
 router.use(protect);
 
-router.post("/", create);
+router.post("/", protect, create);
 
-router.get("/my-orders", myOrders);
+router.get("/my-orders", protect, myOrders);
 
-router.get("/:id", getOneOrder);
+router.get("/:id", protect, getOneOrder);
 
 router.get(
   "/",
@@ -25,6 +26,12 @@ router.get(
   authorize("admin"),
   getAllorders
 );
+
+router.get(
+  "/number/:id",
+  authorize("admin"),
+  getCustomerOrder
+)
 
 router.patch(
   "/:id/status",

@@ -82,7 +82,7 @@ export const getAllOrders = async () => {
 
 export const updateOrderStatus = async (
   orderId: string,
-  status: "pending" | "processing" | "completed" | "cancelled"
+  status: "pending" | "processing" | "delivered" | "cancelled"
 ) => {
   const order = await Order.findById(orderId);
 
@@ -98,3 +98,9 @@ export const updateOrderStatus = async (
     .populate("user", "name email")
     .populate("items.product");
 };
+
+export const customerOrder = async (orderId: string) => {
+  const order = await Order.findById(orderId).populate("user", "name email")
+    .populate("items.product");;
+  return order;
+}
