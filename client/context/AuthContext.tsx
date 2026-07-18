@@ -49,7 +49,7 @@ useEffect(() => {
 
     try {
       const response = await getCurrentUser();
-
+      
       setUser(response.data);
       setToken(token);
     } catch (error) {

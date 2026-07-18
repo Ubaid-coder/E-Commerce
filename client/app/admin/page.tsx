@@ -1,10 +1,17 @@
 import AdminSidebar from '@/components/admin/Sidebar';
+import AdminOnly from '@/components/Auth/AdminOnly';
+import ProtectedRoute from '@/components/Auth/ProtectedRoute';
 import React from 'react'
 
 const page = () => {
   return (
     <>
-    <AdminSidebar />
+      <AdminOnly>
+
+        <AdminSidebar />
+
+      </AdminOnly>
+
     </>
   )
 }
