@@ -6,11 +6,21 @@ import {
     getUserById,
     updateUser,
     deleteUser,
+    getUserProfile,
+    updateUserProfile,
 } from "./user.controller";
 import { authorize } from "../../middlewares/authorize.middleware";
 import { protect } from "../../middlewares/auth.middleware";
 
 const router = express.Router();
+
+/*
+User Routes
+*/
+
+// Get User profile
+router.get("/profile/", protect, getUserProfile)
+router.put("/profile/", protect, updateUserProfile)
 
 /**
  * Admin Routes

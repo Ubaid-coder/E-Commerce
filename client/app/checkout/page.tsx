@@ -14,7 +14,7 @@ export default function CheckoutPage() {
 
   // Layout selection states
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'cod'>('card');
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'cod'>('cod');
 
   // Dynamic cost calculations based on actual cart context
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);

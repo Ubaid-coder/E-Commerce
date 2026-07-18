@@ -1,7 +1,7 @@
 "use client";
 
 import { useCart } from "@/context/CartContext";
-import { Menu, Search, ShoppingCart, X } from "lucide-react";
+import { Menu, Search, ShoppingCart, X, User, ListOrdered, Package, Package2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -138,6 +138,8 @@ export default function Header() {
               )}
             </Link>
 
+
+
             <div className="hidden sm:flex items-center space-x-2">
               <div className="hidden sm:flex items-center space-x-2">
 
@@ -148,6 +150,13 @@ export default function Header() {
                 ) : isAuthenticated ? (
 
                   <>
+                    <Link href={"/profile"}>
+                      <User />
+                    </Link>
+
+                    <Link href={"/orders"}>
+                      <Package2 />
+                    </Link>
                     <span>Hi, {user?.name}</span>
 
                     <Button

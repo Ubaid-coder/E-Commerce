@@ -1,5 +1,10 @@
 import User from "../auth/auth.model";
 
+interface UpdateProfileData {
+  name?: string;
+  email?: string;
+}
+
 
 /**
  * Get all users
@@ -66,4 +71,18 @@ export const deleteUserService = async (id: string) => {
   return {
     message: "User deleted successfully",
   };
+};
+
+export const getUserProfileService = async (userId: string) => {
+  return await User.findById(userId).select("-password");
+};
+
+export const updateUserProfileService = async (
+  userId: string,
+  data: UpdateProfileData
+) => {
+  return await User.findByIdAndUpdate(userId, data, {
+    new: true,
+    runValidators: true,
+  }).select("-password");
 };
