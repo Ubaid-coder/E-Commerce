@@ -10,6 +10,7 @@ import authRouter from "./modules/auth/auth.route";
 import categoryRouter from "./modules/category/category.route";
 import productRouter from "./modules/product/product.route";
 import orderRouter from "./modules/order/order.route";
+import userRoutes from "./modules/users/user.route";
 
 const app: Application = express();
 
@@ -52,6 +53,8 @@ app.use("/api/v1/products", productRouter);
 
 // Orders
 app.use("/api/v1/orders", orderRouter);
+
+app.use("/api/users", userRoutes);
 
 /**
  * 404 Route Handler
