@@ -54,7 +54,7 @@ app.use("/api/v1/products", productRouter);
 // Orders
 app.use("/api/v1/orders", orderRouter);
 
-app.use("/api/users", userRoutes);
+app.use("/api/v1/users", userRoutes);
 
 /**
  * 404 Route Handler
