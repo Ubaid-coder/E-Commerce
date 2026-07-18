@@ -18,7 +18,9 @@ export default function AdminOnly({
 
     useEffect(() => {
         if (!loading && !isAuthenticated) router.replace("/login");
-        if (user?.role !== "admin") router.replace("/");
+        if (!loading && isAuthenticated && user) {
+            if (user.role !== "admin") router.replace("/");
+        }
     }, [loading, isAuthenticated, router])
 
     if (loading) {
