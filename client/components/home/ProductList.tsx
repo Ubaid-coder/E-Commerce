@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import products from "@/data/products.json";
 import ProductCard from "./ProductCard";
-import { Product } from "@/types/product";
+import { ProductType } from "@/types/product";
 import { getProducts } from "@/services/product.service";
 import BloomLoader from "../Loader";
 
 export default function ProductList() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

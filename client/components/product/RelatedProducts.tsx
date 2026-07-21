@@ -1,15 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import products from "@/data/products.json";
-import { Product } from "@/types/product";
+// import products from "@/data/products.json";
+import { ProductType } from "@/types/product";
 import Image from "next/image";
 import Link from "next/link";
 
 interface RelatedProductsProps {
-  product: Product;
+  products: ProductType;
 }
 
-export default function RelatedProducts({ product }: RelatedProductsProps) {
+export default function RelatedProducts({ products }: RelatedProductsProps) {
+  console.log(products)
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -22,18 +23,16 @@ export default function RelatedProducts({ product }: RelatedProductsProps) {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products
-          .filter((p) => p.id !== product.id)
-          .slice(0, 4)
-          .map((relatedProduct) => (
+        {products && products
+          ?.map((relatedProduct) => (
             <Card
-              key={relatedProduct.id}
+              key={relatedProduct._id}
               className="group overflow-hidden hover:shadow-lg transition-all duration-300"
             >
               <Link href={`/product/${relatedProduct.id}`}>
                 <div className="aspect-square overflow-hidden bg-muted">
                   <Image
-                    src={relatedProduct.image}
+                    src={relatedProduct.images[0]}
                     alt={relatedProduct.name}
                     width={400}
                     height={400}

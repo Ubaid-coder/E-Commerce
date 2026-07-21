@@ -7,8 +7,8 @@ import RelatedProducts from "@/components/product/RelatedProducts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
-import { Product } from "@/types/product";
-import { getProduct } from "@/services/product.service";
+import { ProductType } from "@/types/product";
+import { getProduct, getProducts } from "@/services/product.service";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import noImageFound from '../../../public/images/NoImage.jpg'
@@ -36,7 +36,8 @@ export default function Product() {
   const [justAdded, setJustAdded] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<ProductType | null>(null);
+  const [products, setProducts] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
 
 
@@ -45,7 +46,7 @@ export default function Product() {
     const fetchProduct = async () => {
       try {
         const response = await getProduct(productId as string);
-        
+
         setProduct(response?.data);
       } catch (error) {
         console.error(error);
@@ -53,16 +54,32 @@ export default function Product() {
         setLoading(false);
       }
     }
+
+    const fetchAllProduct = async () => {
+      try {
+        const response = await getProducts();
+
+        setProducts(response?.data);
+
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchProduct();
-   console.log(product)
+    fetchAllProduct();
+
+
   }, [productId])
 
   if (loading) {
     return <BloomLoader />
   }
   if (!product) {
-   return <ProductNotFound />;
-}
+    return <ProductNotFound />;
+  }
 
   const handleAddToCart = async () => {
     setIsAdding(true);
@@ -71,10 +88,10 @@ export default function Product() {
 
     for (let i = 0; i < quantity; i++) {
       addToCart({
-        id: product.id,
+        _id: product._id,
         name: product.name,
         price: product.price,
-        image: product.image,
+        images: product.images[0],
         quantity: 1,
       });
     }
@@ -107,7 +124,7 @@ export default function Product() {
           <div className="w-full max-w-[500px] mx-auto flex flex-col items-center px-4">
             <div className="rounded-xl shadow-lg overflow-hidden mb-4 w-full">
               <Image
-                src={product?.images[0]||noImageFound}
+                src={product?.images[0] || noImageFound}
                 alt="Selected product"
                 width={600}
                 height={600}
@@ -248,7 +265,7 @@ export default function Product() {
 
       <Features />
 
-      <RelatedProducts product={product} />
+      <RelatedProducts products={products} />
     </div>
   );
 }

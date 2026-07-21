@@ -21,7 +21,7 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // We'll move this to .env later
+    origin: "*", // We'll move this to .env later
     credentials: true,
   })
 );

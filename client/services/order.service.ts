@@ -16,9 +16,13 @@ export const getMyOrders = async () => {
 };
 
 export const getOrder = async (id: string) => {
-  const response = await api.get(`/orders/${id}`);
+  try {
+    const response = await api.get(`/orders/${id}`);
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 // ===================== Admin =====================
@@ -28,7 +32,7 @@ export const getAllOrders = async () => {
   return response.data;
 };
 
-export const getCustomerOrder = async(id:string) => {
+export const getCustomerOrder = async (id: string) => {
   const response = await api.get(`/orders/number/${id}`);
   return response.data
 }

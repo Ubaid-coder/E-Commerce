@@ -5,27 +5,27 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
+import noImage from '../../public/images/NoImage.jpg'
 
 interface CartItemProps {
   item: {
     _id: string;
     name: string;
     price: number;
-    image: string;
+    images: string;
     quantity: number;
   };
   isLast: boolean;
 }
 
 export default function CartItem({ item, isLast }: CartItemProps) {
-  const { removeFromCart, updateQuantity } = useCart();
-
+  const {cart, removeFromCart, updateQuantity } = useCart();
   return (
     <div>
       <div className="flex items-start gap-4">
         <div className="relative w-[100px] h-[100px]">
           <Image
-            src={item.image}
+            src={item.images}
             alt={item.name}
             fill
             sizes="100px"

@@ -14,7 +14,7 @@ export default function CheckoutPage() {
 
   // Layout selection states
   const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'paypal' | 'cod'>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<'card'  | 'cod'>('cod');
 
   // Dynamic cost calculations based on actual cart context
   const subtotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -31,9 +31,10 @@ export default function CheckoutPage() {
         quantity: item.quantity,
       }));
 
-      await createOrder(items);
+      let order = await createOrder(items);
+     
       clearCart();
-      router.push("/order-success");
+      router.push(`/order-success/${order.data._id}`);
     } catch (error) {
       console.error(error);
       alert("Failed to place order");
@@ -100,6 +101,17 @@ export default function CheckoutPage() {
                     required
                     className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm"
                     placeholder="you@example.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="phone" className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm"
+                    placeholder="+XX-••••"
                   />
                 </div>
               </div>
@@ -229,13 +241,7 @@ export default function CheckoutPage() {
                 >
                   Credit Card
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod('paypal')}
-                  className={`flex-1 text-xs py-2 px-3 rounded-md font-medium transition-colors ${paymentMethod === 'paypal' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                >
-                  PayPal
-                </button>
+                
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('cod')}
@@ -277,11 +283,6 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {paymentMethod === 'paypal' && (
-                <div className="text-center py-6 bg-slate-50/50 rounded-xl border border-slate-100">
-                  <p className="text-sm text-slate-600">You will be redirected securely to PayPal after confirming your purchase.</p>
-                </div>
-              )}
 
               {paymentMethod === 'cod' && (
                 <div className="p-4 bg-emerald-50/20 border border-emerald-100/50 rounded-xl flex gap-3 items-start">
@@ -312,7 +313,7 @@ export default function CheckoutPage() {
                   <li key={item._id} className="py-4 flex gap-4">
                     <div className="relative w-16 h-16 shrink-0">
                       <Image
-                        src={item.image}
+                        src={item.images}
                         alt={item.name}
                         fill
                         className="object-cover rounded-lg bg-slate-100 border border-slate-100"

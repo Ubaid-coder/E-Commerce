@@ -9,11 +9,11 @@ import { Check, Eye, Heart, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Product } from "@/types/product";
+import { ProductType } from "@/types/product";
 
 
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({ product }: { product: ProductType }) {
   const [isLiked, setIsLiked] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -33,7 +33,7 @@ export default function ProductCard({ product }: { product: Product }) {
       _id: product._id,
       name: product.name,
       price: product.price,
-      image: product.images[0] ,
+      images: product.images[0],
       quantity: 1,
     });
 
