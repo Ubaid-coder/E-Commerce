@@ -49,12 +49,28 @@ export const createProduct = async (data: CreateProductData) => {
   return await product.populate("category", "name slug");
 };
 
-export const getAllProducts = async () => {
-  return await Product.find({
-    isPublished: true,
-  })
-    .populate("category", "name slug")
-    .sort({ createdAt: -1 });
+export const getAllProducts = async (page: number = 1, limit: number = 12) => {
+  const skip = (page - 1) * limit;
+  const filter = {
+    isPublished: true
+  };
+
+  const totalProducts = await Product.countDocuments(filter);
+  const products = await Product.find(filter)
+    .populate("category")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  return {
+    products,
+    pagination: {
+      page,
+      limit,
+      totalProducts,
+      totalPages: Math.ceil(totalProducts / limit)
+    }
+  }
 };
 
 export const getProductById = async (id: string) => {
