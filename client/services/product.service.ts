@@ -1,11 +1,12 @@
 import api from './api'
 
-export const getProducts = async (page: number = 1, limit: number = 1) => {
+export const getProducts = async (page: number = 1, limit: number = 1, category?: string) => {
   try {
 
-    const response = await api.get(`/products?page=${page}&limit=${limit}`);
-   
+  
+    const response = await api.get(`/products?page=${page}&limit=${limit}&category=${category}`);
     return response.data;
+
   } catch (error) {
     throw new Error("Failed to fetch products");
   }
@@ -15,6 +16,15 @@ export const getProduct = async (id: string) => {
   const response = await api.get(`/products/${id}`);
   return response.data;
 };
+
+export const getCategories = async () => {
+  try {
+    const response = api.get("/categories");
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const createProduct = async (data: object) => {
   const response = await api.post("/products", data);
