@@ -5,6 +5,7 @@ import {
   getAllProducts,
   getProductById,
   updateProduct,
+  getFeaturedProducts
 } from "./product.service";
 
 export const create = async (req: Request, res: Response) => {
@@ -55,6 +56,27 @@ export const getAll = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const featuredProducts = async (req: Request, res: Response) => {
+  try {
+    const products = await getFeaturedProducts();
+
+    res.status(200).json({
+      success: true,
+      data: products,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
+    });
+  }
+}
 
 export const getOne = async (req: Request, res: Response) => {
   try {

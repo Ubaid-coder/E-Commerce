@@ -54,20 +54,20 @@ export const getAllProducts = async (
   page: number = 1,
   limit: number = 12,
   category?: string,
-  search?:string
+  search?: string
 ) => {
   const skip = (page - 1) * limit;
 
   const filter: any = {
     isPublished: true,
-    
+
   };
 
   if (category && mongoose.Types.ObjectId.isValid(category)) {
     filter.category = new mongoose.Types.ObjectId(category);
   }
 
-  if(search){
+  if (search) {
     filter.name = {
       $regex: search,
       $options: "i"
@@ -95,6 +95,23 @@ export const getAllProducts = async (
   };
 };
 
+export const getFeaturedProducts = async () => {
+  const categories = await Category.find();
+  const products = await Product.find({
+    isFeatured: true,
+    isPublished: true,
+  }).populate("category");
+  for (const category of categories) {
+    const products = await Product.find({
+      category: category._id,
+      isFeatured: true,
+      isPublished: true,
+    }).limit(4);
+  }
+
+
+  return products;
+};
 export const getProductById = async (id: string) => {
   const product = await Product.findById(id).populate(
     "category",

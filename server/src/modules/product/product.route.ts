@@ -5,6 +5,7 @@ import {
   getOne,
   update,
   remove,
+  featuredProducts
 } from "./product.controller";
 
 import { protect } from "../../middlewares/auth.middleware";
@@ -15,6 +16,8 @@ const router = Router();
 /* ---------- Public ---------- */
 
 router.get("/", getAll);
+router.get("/featured", featuredProducts);
+
 router.get("/:id", getOne);
 
 /* ---------- Admin ---------- */
