@@ -1,10 +1,25 @@
 import api from './api'
 
-export const getProducts = async (page: number = 1, limit: number = 1, category?: string) => {
+export const getProducts = async (
+  page: number = 1,
+  limit: number = 1,
+  category?: string,
+  search?: string
+) => {
   try {
 
-  
-    const response = await api.get(`/products?page=${page}&limit=${limit}&category=${category}`);
+    let url = `/products?page=${page}&limit=${limit}`;
+
+    if (category) {
+      url += `&category=${category}`;
+    }
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    const response = await api.get(url);
+
     return response.data;
 
   } catch (error) {

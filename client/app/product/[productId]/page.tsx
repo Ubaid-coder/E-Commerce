@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { ProductType } from "@/types/product";
-import { getProduct, getProducts } from "@/services/product.service";
-import { useEffect } from "react";
+import { getProduct } from "@/services/product.service";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import noImageFound from '../../../public/images/NoImage.jpg'
+import noImageFound from "../../../public/images/NoImage.jpg";
 import {
   Check,
   Heart,
@@ -23,8 +23,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { retry } from "next/dist/compiled/@next/font/dist/google/retry";
 import { BloomLoader } from "@/components/Loader";
 
 export default function Product() {
@@ -37,46 +35,30 @@ export default function Product() {
   const [isLiked, setIsLiked] = useState(false);
 
   const [product, setProduct] = useState<ProductType | null>(null);
-  const [products, setProducts] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
 
-
   useEffect(() => {
-
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const response = await getProduct(productId as string);
-
         setProduct(response?.data);
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
       }
+    };
+
+    if (productId) {
+      fetchProduct();
     }
-
-    const fetchAllProduct = async () => {
-      try {
-        const response = await getProducts();
-
-        setProducts(response?.data);
-
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchProduct();
-    fetchAllProduct();
-
-
-  }, [productId])
+  }, [productId]);
 
   if (loading) {
-    return <BloomLoader />
+    return <BloomLoader />;
   }
+
   if (!product) {
     return <ProductNotFound />;
   }
@@ -114,6 +96,12 @@ export default function Product() {
       setQuantity((prev) => prev - 1);
     }
   };
+
+  // Safe category ID extraction whether category is string or object
+  const categoryId =
+    typeof product.category === "object" && product.category !== null
+      ? (product.category as { _id: string })._id
+      : (product.category as string);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -265,7 +253,11 @@ export default function Product() {
 
       <Features />
 
-      <RelatedProducts products={products} />
+      {/* Related Products component now manages its own category fetching & lazy loading */}
+      <RelatedProducts
+        categoryId={categoryId}
+        currentProductId={product._id}
+      />
     </div>
   );
 }

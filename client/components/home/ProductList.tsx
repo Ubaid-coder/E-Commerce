@@ -6,6 +6,8 @@ import { ProductType } from "@/types/product";
 import { getProducts, getCategories } from "@/services/product.service";
 import BloomLoader from "../Loader";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, X, Loader2 } from "lucide-react";
 
 interface Category {
   _id: string;
@@ -17,6 +19,10 @@ export default function ProductList() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(""); // Empty string = All Products
+  
+  // Search state
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -26,12 +32,20 @@ export default function ProductList() {
   // Sentinel DOM node reference to trigger infinite loading
   const observerTarget = useRef<HTMLDivElement | null>(null);
 
-  // 1. Fetch Categories once when the component mounts
+  // Debounce logic: Increased delay to 600ms
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 600);
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // 1. Fetch Categories once on mount
   useEffect(() => {
     const fetchCategoriesData = async () => {
       try {
         const response = await getCategories();
-        // Fallback checks to safely extract categories list regardless of API structure
         const list =
           response?.data?.data ||
           response?.data ||
@@ -51,10 +65,15 @@ export default function ProductList() {
 
   // 2. Main Fetch Products Function
   const fetchProducts = useCallback(
-    async (pageNumber: number, category: string, isReset: boolean = false) => {
+    async (
+      pageNumber: number,
+      category: string,
+      searchQuery: string,
+      isReset: boolean = false
+    ) => {
       try {
         setLoading(true);
-        const response = await getProducts(pageNumber, 12, category);
+        const response = await getProducts(pageNumber, 12, category, searchQuery);
 
         if (response?.success) {
           const fetchedProducts =
@@ -62,7 +81,7 @@ export default function ProductList() {
           const totalPages =
             response.pagination?.totalPages || response.totalPages || 1;
 
-          // Replace list if selecting a new category/page 1, otherwise append
+          // Replace list if selecting new category/search/page 1, otherwise append
           setProducts((prev) =>
             isReset || pageNumber === 1
               ? fetchedProducts
@@ -85,22 +104,23 @@ export default function ProductList() {
   const handleCategorySelect = (category: string) => {
     if (selectedCategory === category) return;
 
-    // Reset pagination state
     setSelectedCategory(category);
     setPage(1);
-    setProducts([]); // Clear existing items immediately for smooth UI transition
+    setProducts([]);
     setHasMore(true);
 
-    // Fetch page 1 for the newly selected category immediately
-    fetchProducts(1, category, true);
+    fetchProducts(1, category, debouncedSearch, true);
   };
 
-  // 4. Initial Mount Load
+  // 4. Trigger fetch when debounced search term changes
   useEffect(() => {
-    fetchProducts(1, "");
-  }, [fetchProducts]);
+    setPage(1);
+    setProducts([]);
+    setHasMore(true);
+    fetchProducts(1, selectedCategory, debouncedSearch, true);
+  }, [debouncedSearch, fetchProducts]);
 
-  // 5. Infinite Scroll Intersection Observer (Triggers for Page 2, 3, etc.)
+  // 5. Infinite Scroll Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -108,12 +128,12 @@ export default function ProductList() {
         if (target.isIntersecting && hasMore && !loading && !initialLoading) {
           setPage((prevPage) => {
             const nextPage = prevPage + 1;
-            fetchProducts(nextPage, selectedCategory, false);
+            fetchProducts(nextPage, selectedCategory, debouncedSearch, false);
             return nextPage;
           });
         }
       },
-      { rootMargin: "300px" } // Pre-fetches 300px before scrolling hits the bottom
+      { rootMargin: "300px" }
     );
 
     const currentTarget = observerTarget.current;
@@ -126,7 +146,7 @@ export default function ProductList() {
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, loading, initialLoading, selectedCategory, fetchProducts]);
+  }, [hasMore, loading, initialLoading, selectedCategory, debouncedSearch, fetchProducts]);
 
   if (initialLoading) {
     return (
@@ -137,8 +157,33 @@ export default function ProductList() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 px-4 sm:px-6">
+    <div className="max-w-7xl mx-auto space-y-6 px-4 sm:px-6">
       
+      {/* Search Input Bar with Embedded Spinner */}
+      <div className="relative max-w-md">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 pr-10 rounded-full bg-background border-border shadow-sm focus-visible:ring-primary"
+        />
+
+        {/* Show active spinner inside input when fetching search results */}
+        {loading && searchTerm ? (
+          <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+        ) : searchTerm ? (
+          <button
+            type="button"
+            onClick={() => setSearchTerm("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        ) : null}
+      </div>
+
       {/* Category Pills Filter Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
         <Button
@@ -176,7 +221,9 @@ export default function ProductList() {
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-xl font-semibold mb-2">No products found</h3>
               <p className="text-muted-foreground">
-                No products available in this category.
+                {debouncedSearch
+                  ? `No items match "${debouncedSearch}"`
+                  : "No products available in this category."}
               </p>
             </div>
           )
