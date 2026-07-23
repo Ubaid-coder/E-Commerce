@@ -27,6 +27,17 @@ export const getProducts = async (
   }
 };
 
+
+export const getFeaturedProductsByCategory = async () => {
+  try {
+    const response = await api.get(`/products/featured`);
+    return response.data;
+
+  } catch (err) {
+    console.log(err)
+  }
+};
+
 export const getProduct = async (id: string) => {
   const response = await api.get(`/products/${id}`);
   return response.data;

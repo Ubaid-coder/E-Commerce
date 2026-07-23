@@ -3,11 +3,15 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import ProductCard from "./ProductCard";
 import { ProductType } from "@/types/product";
-import { getProducts, getCategories } from "@/services/product.service";
+import {
+  getProducts,
+  getCategories,
+  getFeaturedProductsByCategory,
+} from "@/services/product.service";
 import BloomLoader from "../Loader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X, Loader2, Sparkles } from "lucide-react";
 
 interface Category {
   _id: string;
@@ -15,11 +19,19 @@ interface Category {
   slug: string;
 }
 
+interface CategoryGroup {
+  _id: string;
+  categoryName: string;
+  products: ProductType[];
+}
+
 export default function ProductList() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(""); // Empty string = All Products
   
+  // Selected filter state: "" = All, "featured" = Featured, or a Category ID
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
   // Search state
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
@@ -32,7 +44,7 @@ export default function ProductList() {
   // Sentinel DOM node reference to trigger infinite loading
   const observerTarget = useRef<HTMLDivElement | null>(null);
 
-  // Debounce logic: Increased delay to 600ms
+  // Debounce logic for search
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -41,7 +53,7 @@ export default function ProductList() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // 1. Fetch Categories once on mount
+  // 1. Fetch Categories on mount
   useEffect(() => {
     const fetchCategoriesData = async () => {
       try {
@@ -63,25 +75,49 @@ export default function ProductList() {
     fetchCategoriesData();
   }, []);
 
-  // 2. Main Fetch Products Function
+  // 2. Fetch Products Function
   const fetchProducts = useCallback(
     async (
       pageNumber: number,
-      category: string,
+      categoryMode: string,
       searchQuery: string,
       isReset: boolean = false
     ) => {
       try {
         setLoading(true);
-        const response = await getProducts(pageNumber, 12, category, searchQuery);
+
+        // FEATURED MODE: Call backend featured endpoint when user clicks 'Featured' button
+        if (categoryMode === "featured" && !searchQuery) {
+          const response = await getFeaturedProductsByCategory();
+          const groups: CategoryGroup[] =
+            response?.data?.data || response?.data || response?.featured || [];
+
+       
+
+          setProducts(groups);
+          
+          setHasMore(false); // No infinite scrolling for the set of featured items
+          return;
+        }
+
+        // STANDARD / CATEGORY / SEARCH MODE: Standard paginated API fetch
+        const targetCategory = categoryMode === "featured" ? "" : categoryMode;
+        const response = await getProducts(
+          pageNumber,
+          12,
+          targetCategory,
+          searchQuery
+        );
 
         if (response?.success) {
           const fetchedProducts =
-            response.products || response.data?.products || response.data || [];
+            response.products ||
+            response.data?.products ||
+            response.data ||
+            [];
           const totalPages =
             response.pagination?.totalPages || response.totalPages || 1;
 
-          // Replace list if selecting new category/search/page 1, otherwise append
           setProducts((prev) =>
             isReset || pageNumber === 1
               ? fetchedProducts
@@ -100,19 +136,19 @@ export default function ProductList() {
     []
   );
 
-  // 3. Category Click Event Handler
-  const handleCategorySelect = (category: string) => {
-    if (selectedCategory === category) return;
+  // 3. Category/Filter Click Event Handler
+  const handleCategorySelect = (categoryMode: string) => {
+    if (selectedCategory === categoryMode) return;
 
-    setSelectedCategory(category);
+    setSelectedCategory(categoryMode);
     setPage(1);
     setProducts([]);
     setHasMore(true);
 
-    fetchProducts(1, category, debouncedSearch, true);
+    fetchProducts(1, categoryMode, debouncedSearch, true);
   };
 
-  // 4. Trigger fetch when debounced search term changes
+  // 4. Trigger fetch when search query updates
   useEffect(() => {
     setPage(1);
     setProducts([]);
@@ -120,8 +156,11 @@ export default function ProductList() {
     fetchProducts(1, selectedCategory, debouncedSearch, true);
   }, [debouncedSearch, fetchProducts]);
 
-  // 5. Infinite Scroll Intersection Observer
+  // 5. Infinite Scroll Observer
   useEffect(() => {
+    // Disable infinite scroll listener in static featured mode when there is no active search query
+    if (selectedCategory === "featured" && !debouncedSearch) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         const target = entries[0];
@@ -146,7 +185,14 @@ export default function ProductList() {
         observer.unobserve(currentTarget);
       }
     };
-  }, [hasMore, loading, initialLoading, selectedCategory, debouncedSearch, fetchProducts]);
+  }, [
+    hasMore,
+    loading,
+    initialLoading,
+    selectedCategory,
+    debouncedSearch,
+    fetchProducts,
+  ]);
 
   if (initialLoading) {
     return (
@@ -159,7 +205,7 @@ export default function ProductList() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 px-4 sm:px-6">
       
-      {/* Search Input Bar with Embedded Spinner */}
+      {/* Search Input Bar */}
       <div className="relative max-w-md">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -170,7 +216,6 @@ export default function ProductList() {
           className="pl-10 pr-10 rounded-full bg-background border-border shadow-sm focus-visible:ring-primary"
         />
 
-        {/* Show active spinner inside input when fetching search results */}
         {loading && searchTerm ? (
           <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         ) : searchTerm ? (
@@ -184,8 +229,9 @@ export default function ProductList() {
         ) : null}
       </div>
 
-      {/* Category Pills Filter Bar */}
+      {/* Category & Featured Pills Filter Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        {/* All Products Option */}
         <Button
           variant={selectedCategory === "" ? "default" : "outline"}
           size="sm"
@@ -195,11 +241,25 @@ export default function ProductList() {
           All
         </Button>
 
+        {/* Featured Products Button */}
+        <Button
+          variant={selectedCategory === "featured" ? "default" : "outline"}
+          size="sm"
+          onClick={() => handleCategorySelect("featured")}
+          className="rounded-full text-xs font-semibold px-4 shrink-0 transition-all gap-1.5"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+          Featured
+        </Button>
+
+        {/* Dynamic Categories */}
         {categories.length > 0 &&
           categories.map((category) => (
             <Button
               key={category._id}
-              variant={selectedCategory === category._id ? "default" : "outline"}
+              variant={
+                selectedCategory === category._id ? "default" : "outline"
+              }
               size="sm"
               onClick={() => handleCategorySelect(category._id)}
               className="rounded-full text-xs font-semibold px-4 shrink-0 transition-all"
@@ -209,7 +269,7 @@ export default function ProductList() {
           ))}
       </div>
 
-      {/* Product Card Grid */}
+      {/* Product Cards Grid */}
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {products?.length > 0 ? (
           products.map((product, index) => (
@@ -223,14 +283,14 @@ export default function ProductList() {
               <p className="text-muted-foreground">
                 {debouncedSearch
                   ? `No items match "${debouncedSearch}"`
-                  : "No products available in this category."}
+                  : "No products available in this selection."}
               </p>
             </div>
           )
         )}
       </div>
 
-      {/* Infinite Scroll Trigger & Bottom Loading Indicator */}
+      {/* Bottom Loading Indicator & Infinite Scroll Target */}
       <div
         ref={observerTarget}
         className="py-8 flex flex-col items-center justify-center min-h-[80px]"
@@ -239,7 +299,9 @@ export default function ProductList() {
 
         {!hasMore && products.length > 0 && (
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            You've reached the end of the catalog
+            {selectedCategory === "featured"
+              ? "Showing all featured products"
+              : "You've reached the end of the catalog"}
           </p>
         )}
       </div>

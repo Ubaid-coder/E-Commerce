@@ -97,20 +97,17 @@ export const getAllProducts = async (
 
 export const getFeaturedProducts = async () => {
   const categories = await Category.find();
-  const products = await Product.find({
-    isFeatured: true,
-    isPublished: true,
-  }).populate("category");
-  for (const category of categories) {
-    const products = await Product.find({
+  const productsPromise = categories.map(category => (
+     Product.find({
       category: category._id,
-      isFeatured: true,
-      isPublished: true,
-    }).limit(4);
-  }
+      isFeatured:true,
+      isPublished:true
+    }).limit(4)
+  ))
 
+  const products = await Promise.all(productsPromise);
+  return products.flat();
 
-  return products;
 };
 export const getProductById = async (id: string) => {
   const product = await Product.findById(id).populate(
