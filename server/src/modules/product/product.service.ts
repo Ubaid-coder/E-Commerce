@@ -1,5 +1,6 @@
 import Product from "./product.model";
 import Category from "../category/category.model";
+import mongoose from "mongoose";
 
 interface CreateProductData {
   name: string;
@@ -49,13 +50,24 @@ export const createProduct = async (data: CreateProductData) => {
   return await product.populate("category", "name slug");
 };
 
-export const getAllProducts = async (page: number = 1, limit: number = 12) => {
+export const getAllProducts = async (
+  page: number = 1,
+  limit: number = 12,
+  category?: string
+) => {
   const skip = (page - 1) * limit;
-  const filter = {
-    isPublished: true
+
+  const filter: any = {
+    isPublished: true,
+    // isDeleted: false, // Uncomment if you have soft delete
   };
 
+  if (category && mongoose.Types.ObjectId.isValid(category.trim())) {
+    filter.category = new mongoose.Types.ObjectId(category.trim());
+  }
+
   const totalProducts = await Product.countDocuments(filter);
+
   const products = await Product.find(filter)
     .populate("category")
     .sort({ createdAt: -1 })
@@ -68,11 +80,12 @@ export const getAllProducts = async (page: number = 1, limit: number = 12) => {
       page,
       limit,
       totalProducts,
-      totalPages: Math.ceil(totalProducts / limit)
-    }
-  }
+      totalPages: Math.ceil(totalProducts / limit),
+      hasNextPage: page < Math.ceil(totalProducts / limit),
+      hasPreviousPage: page > 1,
+    },
+  };
 };
-
 export const getProductById = async (id: string) => {
   const product = await Product.findById(id).populate(
     "category",

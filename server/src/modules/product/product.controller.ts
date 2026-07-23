@@ -28,17 +28,19 @@ export const create = async (req: Request, res: Response) => {
 export const getAll = async (req: Request, res: Response) => {
   try {
     const page = Number(req.query.page) || 1;
-     const limit = Number(req.query.limit) || 12;
-
-     const result = await getAllProducts(page,limit);
+    const limit = Number(req.query.limit) || 12;
+    const category = req.query.category as string;
+    const result = await getAllProducts(page, limit, category);
+    console.log("Category: ", result);
 
     res.status(200).json({
-      success:true,
+      success: true,
       ...result
     })
 
-  
+
   } catch (error) {
+    console.log(error)
     res.status(500).json({
       success: false,
       message:
