@@ -53,17 +53,25 @@ export const createProduct = async (data: CreateProductData) => {
 export const getAllProducts = async (
   page: number = 1,
   limit: number = 12,
-  category?: string
+  category?: string,
+  search?:string
 ) => {
   const skip = (page - 1) * limit;
 
   const filter: any = {
     isPublished: true,
-    // isDeleted: false, // Uncomment if you have soft delete
+    
   };
 
-  if (category && mongoose.Types.ObjectId.isValid(category.trim())) {
-    filter.category = new mongoose.Types.ObjectId(category.trim());
+  if (category && mongoose.Types.ObjectId.isValid(category)) {
+    filter.category = new mongoose.Types.ObjectId(category);
+  }
+
+  if(search){
+    filter.name = {
+      $regex: search,
+      $options: "i"
+    }
   }
 
   const totalProducts = await Product.countDocuments(filter);
@@ -86,6 +94,7 @@ export const getAllProducts = async (
     },
   };
 };
+
 export const getProductById = async (id: string) => {
   const product = await Product.findById(id).populate(
     "category",
