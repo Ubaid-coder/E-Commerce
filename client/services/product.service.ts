@@ -23,7 +23,7 @@ export const getProducts = async (
     return response.data;
 
   } catch (error) {
-    throw new Error("Failed to fetch products");
+    console.log(error);
   }
 };
 
