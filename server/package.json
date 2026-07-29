@@ -238,7 +238,7 @@
   "scripts": {
   
     
-  "dev": "tsx watch src/server.ts",
+  "dev": "node src/server.ts",
   
     
   "build": "tsc",

@@ -23,7 +23,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:3000',
-      process?.env?.BACKEND_URL
+      process?.env?.BACKEND_URL as string
     ], // We'll move this to .env later
     credentials: true,
   })

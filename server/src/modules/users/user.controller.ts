@@ -8,6 +8,17 @@ import {
     updateUserProfileService,
 } from "./user.service";
 
+interface UserPayload {
+  _id: string;
+  email: string;
+  name?: string;
+}
+
+// Extend the native Express Request interface
+interface AuthenticatedRequest extends Request {
+  user?: UserPayload; 
+}
+
 /**
  * Get all users
  */
@@ -38,7 +49,7 @@ export const getUserById = async (
     next: NextFunction
 ) => {
     try {
-        const user = await getUserByIdService(req.params.id);
+        const user = await getUserByIdService(req.params.id as string);
 
         res.status(200).json({
             success: true,
@@ -59,7 +70,7 @@ export const updateUser = async (
     next: NextFunction
 ) => {
     try {
-        const user = await updateUserService(req.params.id, req.body);
+        const user = await updateUserService(req.params.id as string, req.body);
 
         res.status(200).json({
             success: true,
@@ -80,7 +91,7 @@ export const deleteUser = async (
     next: NextFunction
 ) => {
     try {
-        const result = await deleteUserService(req.params.id);
+        const result = await deleteUserService(req.params.id as string);
 
         res.status(200).json({
             success: true,
@@ -91,9 +102,9 @@ export const deleteUser = async (
     }
 };
 
-export const getUserProfile = async (req: Request, res: Response) => {
+export const getUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const user = await getUserProfileService(req.user._id);
+        const user = await getUserProfileService(req?.user?._id as string);
 
         if (!user) {
             return res.status(404).json({
@@ -114,10 +125,10 @@ export const getUserProfile = async (req: Request, res: Response) => {
     }
 };
 
-export const updateUserProfile = async (req: Request, res: Response) => {
+export const updateUserProfile = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const updatedUser = await updateUserProfileService(
-            req.user._id,
+            req?.user?._id as string,
             req.body
         );
 

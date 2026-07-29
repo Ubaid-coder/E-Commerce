@@ -1,6 +1,16 @@
 import { Request, Response } from "express";
 import { registerUser, loginUser } from "./auth.service";
-import { AuthRequest } from "../../middlewares/auth.middleware";
+// Define what your user object looks like
+interface UserPayload {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+// Extend the native Express Request interface
+interface AuthenticatedRequest extends Request {
+  user?: UserPayload; 
+}
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -42,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const getMe = async (req: AuthRequest, res: Response) => {
+export const getMe = async (req: AuthenticatedRequest, res: Response) => {
   res.status(200).json({
     success: true,
     data: req.user,

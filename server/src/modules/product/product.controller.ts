@@ -80,7 +80,7 @@ export const featuredProducts = async (req: Request, res: Response) => {
 
 export const getOne = async (req: Request, res: Response) => {
   try {
-    const product = await getProductById(req.params.id);
+    const product = await getProductById(req.params.id as string);
 
     res.status(200).json({
       success: true,
@@ -97,7 +97,7 @@ export const getOne = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
   try {
-    const product = await updateProduct(req.params.id, req.body);
+    const product = await updateProduct(req.params.id as string, req.body);
 
     res.status(200).json({
       success: true,
@@ -115,7 +115,7 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
   try {
-    await deleteProduct(req.params.id);
+    await deleteProduct(req.params.id as string);
 
     res.status(200).json({
       success: true,

@@ -8,15 +8,24 @@ import {
   customerOrder
 } from "./order.service";
 
+interface UserPayload {
+  id: string;
+  email: string;
+  name?: string;
+}
 
+// Extend the native Express Request interface
+interface AuthenticatedRequest extends Request {
+  user?: UserPayload; 
+}
 
 export const create = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response
 ) => {
   try {
     const order = await createOrder({
-      user: req.user.id,
+      user: req?.user?.id as string,
       ...req.body,
     });
 
@@ -37,9 +46,9 @@ export const create = async (
   }
 };
 
-export const myOrders = async (req: Request, res: Response) => {
+export const myOrders = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const orders = await getMyOrders(req.user!.id);
+    const orders = await getMyOrders(req?.user?.id as string);
 
     res.status(200).json({
       success: true,
@@ -55,10 +64,10 @@ export const myOrders = async (req: Request, res: Response) => {
   }
 };
 
-export const getOneOrder = async (req: Request, res: Response) => {
+export const getOneOrder = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const order = await getOrderById(
-      req.params.id,
+      req.params.id as string,
       req.user!.id
     );
 
@@ -98,7 +107,7 @@ export const updateorderStatus = async (req: Request, res: Response) => {
     const { status } = req.body;
 
     const order = await updateOrderStatus(
-      req.params.id,
+      req.params.id as string,
       status
     );
 
@@ -118,7 +127,7 @@ export const updateorderStatus = async (req: Request, res: Response) => {
 
 export const getCustomerOrder = async (req: Request, res: Response) => {
   try {
-    const order = await customerOrder(req?.params?.id);
+    const order = await customerOrder(req?.params?.id as string);
 
     res.status(200).json({
       success: true,
