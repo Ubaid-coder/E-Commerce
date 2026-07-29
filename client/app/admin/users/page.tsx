@@ -37,7 +37,7 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, []);
 
-  const handleRoleToggle = async (userId: string, currentRole: "user" | "admin") => {
+  const handleRoleToggle = async (userId: string, currentRole: "customer" | "admin") => {
     const newRole = currentRole === "admin" ? "customer" : "admin";
     if (confirm(`Change this account tier status to ${newRole.toUpperCase()}?`)) {
       try {

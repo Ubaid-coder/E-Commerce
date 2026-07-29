@@ -28,7 +28,7 @@ interface CategoryGroup {
 export default function ProductList() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  
+
   // Selected filter state: "" = All, "featured" = Featured, or a Category ID
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
@@ -61,7 +61,7 @@ export default function ProductList() {
         const list =
           response?.data?.data ||
           response?.data ||
-          response?.categories ||
+          
           [];
 
         if (Array.isArray(list)) {
@@ -92,10 +92,13 @@ export default function ProductList() {
           const groups: CategoryGroup[] =
             response?.data?.data || response?.data || response?.featured || [];
 
-       
+          // Flatten category groups to a single products array for state
+          const featuredProducts: ProductType[] = Array.isArray(groups)
+            ? groups.flatMap((g) => g.products || [])
+            : [];
 
-          setProducts(groups);
-          
+          setProducts(featuredProducts);
+
           setHasMore(false); // No infinite scrolling for the set of featured items
           return;
         }
@@ -204,7 +207,7 @@ export default function ProductList() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 px-4 sm:px-6">
-      
+
       {/* Search Input Bar */}
       <div className="relative max-w-md">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { getCurrentUser } from "@/services/auth.service";
-import Error from "next/error";
+// removed unused import of Next.js Error component to avoid shadowing global Error
 
 interface User {
   _id: string;

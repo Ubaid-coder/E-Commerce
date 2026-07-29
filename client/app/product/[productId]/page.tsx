@@ -63,20 +63,24 @@ export default function Product() {
     return <ProductNotFound />;
   }
 
+  // Safe fallback source resolution for Next Image imports vs URL strings
+  const fallbackImageSrc =
+    typeof noImageFound === "string" ? noImageFound : noImageFound.src;
+  const mainImage = product.images?.[0] || fallbackImageSrc;
+
   const handleAddToCart = async () => {
     setIsAdding(true);
 
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        _id: product._id,
-        name: product.name,
-        price: product.price,
-        images: product.images[0],
-        quantity: 1,
-      });
-    }
+    // Single context call with requested quantity
+    addToCart({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      images: mainImage,
+      quantity: quantity,
+    });
 
     setIsAdding(false);
     setJustAdded(true);
@@ -84,9 +88,9 @@ export default function Product() {
     setTimeout(() => setJustAdded(false), 2000);
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    setTimeout(() => router.push("/cart"), 500);
+  const handleBuyNow = async () => {
+    await handleAddToCart();
+    router.push("/cart");
   };
 
   const handleQuantityChange = (type: "increment" | "decrement") => {
@@ -97,7 +101,6 @@ export default function Product() {
     }
   };
 
-  // Safe category ID extraction whether category is string or object
   const categoryId =
     typeof product.category === "object" && product.category !== null
       ? (product.category as { _id: string })._id
@@ -112,12 +115,11 @@ export default function Product() {
           <div className="w-full max-w-[500px] mx-auto flex flex-col items-center px-4">
             <div className="rounded-xl shadow-lg overflow-hidden mb-4 w-full">
               <Image
-                src={product?.images[0] || noImageFound}
-                alt="Selected product"
+                src={mainImage}
+                alt={product.name}
                 width={600}
                 height={600}
                 priority
-                fetchPriority="high"
                 className="rounded-xl object-cover w-full h-auto max-h-[500px]"
               />
             </div>
@@ -253,7 +255,6 @@ export default function Product() {
 
       <Features />
 
-      {/* Related Products component now manages its own category fetching & lazy loading */}
       <RelatedProducts
         categoryId={categoryId}
         currentProductId={product._id}

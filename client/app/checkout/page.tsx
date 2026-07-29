@@ -7,7 +7,7 @@ import { useCart } from "@/context/CartContext";
 import { createOrder } from "@/services/order.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { label } from "@/components/ui/label";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -141,7 +141,7 @@ export default function ConfirmPaymentPage() {
         totalPrice,
       };
 
-      const response = await createOrder(orderPayload);
+      const response = await createOrder([orderPayload]);
 
       if (response?.success || response?.status === "success") {
         clearCart();

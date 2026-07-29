@@ -19,7 +19,7 @@ interface OrderItem {
 
 interface Order {
   _id: string;
-  user: string;
+  user: { _id: string } | string;
   items: OrderItem[];
   totalPrice: number;
   status: string;
@@ -29,7 +29,7 @@ interface Order {
 export default function AdminOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
-  
+
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -37,11 +37,11 @@ export default function AdminOrdersPage() {
     const fetchAllOrders = async () => {
       try {
         setLoading(true);
-        const {data} = await getAllOrders(); 
-        
-          setOrders(data);
+        const { data } = await getAllOrders();
+
+        setOrders(data);
         console.log(data)
-        
+
       } catch (error) {
         console.error("Failed to fetch admin orders:", error);
       } finally {
@@ -120,7 +120,12 @@ export default function AdminOrdersPage() {
                       <td className="px-6 py-4 text-slate-500">
                         {new Date(order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </td>
-                      <td className="px-6 py-4 font-mono text-xs text-slate-400">{order.user._id}</td>
+                      <td className="px-6 py-4 font-mono text-xs text-slate-400">
+                        {typeof order.user === "object" && order.user !== null
+                          ? order.user._id
+                          : order.user}
+                      </td>
+
                       <td className="px-6 py-4 text-slate-600 font-medium">{totalItemsCount} items</td>
                       <td className="px-6 py-4 font-semibold text-slate-900">${order.totalPrice.toFixed(2)}</td>
                       <td className="px-6 py-4">
@@ -129,7 +134,7 @@ export default function AdminOrdersPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <button 
+                        <button
                           onClick={() => router.push(`/admin/orders/${order._id}`)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-950 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
                         >

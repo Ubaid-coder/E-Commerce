@@ -68,25 +68,28 @@ export default function OrderDetailsPage() {
     }
   }, [id]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    try {
-      setUpdating(true);
-      const response = await updateOrderStatus(id as string, newStatus)
+const handleStatusChange = async (newStatus: string) => {
+  try {
+    setUpdating(true);
+    await updateOrderStatus(id as string, newStatus);
 
-      // if (response.success) {
-        setOrder({ ...order, status: newStatus });
-      // }
-      toast.success(`Order Status changed to: ${newStatus}`,);
+    // Safely update state using functional updater
+    setOrder((prevOrder) => {
+      if (!prevOrder) return null;
+      return {
+        ...prevOrder,
+        status: newStatus,
+      };
+    });
 
-
-
-    } catch (error) {
-      console.error("Error updating status:", error);
-      toast.error("Something went wrong")
-    } finally {
-      setUpdating(false);
-    }
-  };
+    toast.success(`Order Status changed to: ${newStatus}`);
+  } catch (error) {
+    console.error("Error updating status:", error);
+    toast.error("Something went wrong");
+  } finally {
+    setUpdating(false);
+  }
+};
 
   if (loading) {
     return (

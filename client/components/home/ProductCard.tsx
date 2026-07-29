@@ -115,7 +115,7 @@ export default function ProductCard({ product }: { product: ProductType }) {
           {product.ratingsAverage !== undefined && (
             <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
               <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-              <span>{product.ratingsAverage.toFixed(1)}</span>
+              <span>{product.ratingsAverage}</span>
               {product.ratingsQuantity !== undefined && (
                 <span className="text-muted-foreground font-normal text-[11px]">
                   ({product.ratingsQuantity})

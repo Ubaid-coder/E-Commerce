@@ -114,8 +114,8 @@ export default function RelatedProducts({
             <Link href={`/product/${relatedProduct._id}`}>
               <div className="aspect-square overflow-hidden bg-muted">
                 <Image
-                  src={relatedProduct.images[0]}
-                  alt={relatedProduct.name}
+                  src={relatedProduct.images?.[0] || "/placeholder.png"}
+                  alt={relatedProduct.name || "Related product"}
                   width={400}
                   height={400}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
