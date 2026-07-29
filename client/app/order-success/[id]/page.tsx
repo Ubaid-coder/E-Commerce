@@ -11,6 +11,7 @@ interface Product {
   _id: string;
   name: string;
   brand: string;
+  discountPrice: number,
   images: string[];
 }
 
@@ -151,7 +152,7 @@ export default function OrderSuccessPage() {
                 </div>
               </div>
               <div className="text-right font-semibold text-slate-900">
-                ${(item.priceAtPurchase * item.quantity).toFixed(2)}
+                ${(item.product.discountPrice * item.quantity).toFixed(2)}
               </div>
             </div>
           ))}

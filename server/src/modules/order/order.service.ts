@@ -6,46 +6,83 @@ interface OrderItemInput {
   quantity: number;
 }
 
-export const createOrder = async (
-  userId: string,
-  items: OrderItemInput[]
-) => {
-  if (!items || items.length === 0) {
-    throw new Error("Order must contain at least one item");
-  }
+interface CreateOrderData {
+  user: string;
+  items: {
+    product: string;
+    quantity: number;
+  }[];
 
+  shippingAddress: {
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
+
+  shippingMethod: "Standard" | "Express";
+
+  paymentMethod:
+    | "Cash on Delivery"
+    | "Stripe"
+    | "PayPal"
+    | "JazzCash"
+    | "EasyPaisa";
+}
+
+export const createOrder = async (data: CreateOrderData) => {
+  let itemsPrice = 0;
+console.log(data)
   const orderItems = [];
-  let totalPrice = 0;
 
-  for (const item of items) {
+  for (const item of data.items) {
     const product = await Product.findById(item.product);
 
     if (!product) {
-      throw new Error(`Product not found: ${item.product}`);
-    }
-
-    if (product.stock < item.quantity) {
-      throw new Error(`${product.name} has only ${product.stock} items left in stock`);
+      throw new Error("Product not found");
     }
 
     orderItems.push({
       product: product._id,
+      name: product.name,
+      image: product.images[0],
       quantity: item.quantity,
-      priceAtPurchase: product.price,
+      price: product.discountPrice || product.price,
     });
 
-    totalPrice += product.price * item.quantity;
+    itemsPrice += (product.discountPrice || product.price) * item.quantity;
   }
 
+  const shippingPrice =
+    data.shippingMethod === "Express" ? 300 : 150;
+
+  const taxPrice = 0;
+
+  const totalPrice =
+    itemsPrice + shippingPrice + taxPrice;
+
   const order = await Order.create({
-    user: userId,
+    user: data.user,
+
     items: orderItems,
+
+    shippingAddress: data.shippingAddress,
+
+    shippingMethod: data.shippingMethod,
+
+    paymentMethod: data.paymentMethod,
+
+    itemsPrice,
+    shippingPrice,
+    taxPrice,
     totalPrice,
   });
 
-  return await Order.findById(order._id)
-    .populate("user", "name email")
-    .populate("items.product");
+  return order;
 };
 
 export const getMyOrders = async (userId: string) => {

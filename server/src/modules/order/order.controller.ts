@@ -8,23 +8,31 @@ import {
   customerOrder
 } from "./order.service";
 
-export const create = async (req: Request, res: Response) => {
-  try {
-    const userId = req.user!.id;
-    const { items } = req.body;
 
-    const order = await createOrder(userId, items);
+
+export const create = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const order = await createOrder({
+      user: req.user.id,
+      ...req.body,
+    });
 
     res.status(201).json({
       success: true,
-      message: "Order placed successfully",
       data: order,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error(error);
+
+    res.status(500).json({
       success: false,
       message:
-        error instanceof Error ? error.message : "Something went wrong",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong",
     });
   }
 };
