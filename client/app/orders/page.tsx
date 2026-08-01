@@ -26,6 +26,7 @@ interface Order {
     status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
     createdAt: string;
     paymentMethod: string;
+
 }
 
 export default function MyOrdersPage() {
@@ -155,6 +156,7 @@ export default function MyOrdersPage() {
                                         )}`}
                                     >
                                         {order.status}
+
                                     </span>
                                 </div>
                             </div>
@@ -182,6 +184,13 @@ export default function MyOrdersPage() {
                                                 <span className="text-xs text-slate-500">
                                                     Unit Price: ${item.product.price.toFixed(2)}
                                                 </span>
+                                                {
+                                                    order.status.charAt(0).toUpperCase() + order.status.slice(1) === "Delivered" && (
+                                                        <Link href={`/reviews/${item.product._id}`} className="text-xs text-emerald-600 font-medium hover:underline">
+                                                            Review
+                                                        </Link>
+                                                    )
+                                                }
                                                 <span className="text-sm font-semibold text-slate-800">
                                                     ${(item.product.price * item.quantity)}
                                                 </span>
@@ -207,7 +216,6 @@ export default function MyOrdersPage() {
                                     <Link href={`/orders/${order._id}`}>
                                         <Button
                                             className="flex-1 sm:flex-initial text-xs bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 h-9"
-                                        
                                         >
                                             Track Package
                                         </Button>

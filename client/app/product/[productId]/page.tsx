@@ -9,21 +9,28 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/context/CartContext";
 import { ProductType } from "@/types/product";
 import { getProduct } from "@/services/product.service";
+import { getProductReviews, ProductReview } from "@/services/reviews.service";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import noImageFound from "../../../public/images/NoImage.jpg";
 import {
   Check,
+  ChevronDown,
+  ChevronUp,
   Heart,
+  Loader2,
   Minus,
+  MessageSquare,
   Plus,
   Share2,
   ShoppingCart,
   Star,
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { BloomLoader } from "@/components/Loader";
+import { toast } from "sonner";
 
 export default function Product() {
   const { addToCart } = useCart();
@@ -36,6 +43,12 @@ export default function Product() {
 
   const [product, setProduct] = useState<ProductType | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Reviews States
+  const [reviews, setReviews] = useState<ProductReview[]>([]);
+  const [showReviews, setShowReviews] = useState(false);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [reviewsFetched, setReviewsFetched] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -55,6 +68,25 @@ export default function Product() {
     }
   }, [productId]);
 
+  // Fetch reviews when button is clicked
+  const handleToggleReviews = async () => {
+    if (!showReviews && !reviewsFetched) {
+      try {
+        setLoadingReviews(true);
+        const response = await getProductReviews(productId as string);
+        if (response.success) {
+          setReviews(response.reviews);
+          setReviewsFetched(true);
+        }
+      } catch (error: any) {
+        toast.error(error?.message || "Failed to load reviews");
+      } finally {
+        setLoadingReviews(false);
+      }
+    }
+    setShowReviews((prev) => !prev);
+  };
+
   if (loading) {
     return <BloomLoader />;
   }
@@ -63,7 +95,6 @@ export default function Product() {
     return <ProductNotFound />;
   }
 
-  // Safe fallback source resolution for Next Image imports vs URL strings
   const fallbackImageSrc =
     typeof noImageFound === "string" ? noImageFound : noImageFound.src;
   const mainImage = product.images?.[0] || fallbackImageSrc;
@@ -73,7 +104,6 @@ export default function Product() {
 
     await new Promise((resolve) => setTimeout(resolve, 300));
 
-    // Single context call with requested quantity
     addToCart({
       _id: product._id,
       name: product.name,
@@ -251,6 +281,87 @@ export default function Product() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* --- CUSTOMER REVIEWS SECTION --- */}
+      <div className="mb-16 border rounded-xl p-6 bg-card shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Customer Reviews</h2>
+          </div>
+          <Button
+            variant="outline"
+            onClick={handleToggleReviews}
+            disabled={loadingReviews}
+            className="flex items-center gap-2"
+          >
+            {loadingReviews ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : showReviews ? (
+              <>
+                Hide Reviews <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Show Reviews <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </div>
+
+        {showReviews && (
+          <div className="mt-6 space-y-4">
+            <Separator />
+
+            {reviews.length === 0 ? (
+              <p className="text-muted-foreground py-4 text-center">
+                No reviews yet for this product.
+              </p>
+            ) : (
+              <div className="grid gap-4 pt-4">
+                {reviews.map((rev) => (
+                  <div
+                    key={rev._id}
+                    className="p-4 rounded-lg border bg-muted/20 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                          <User className="h-4 w-4" />
+                        </div>
+                        <span className="font-semibold text-foreground">
+                          {rev.user?.name || "Anonymous User"}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(rev.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < rev.rating
+                              ? "fill-amber-400 text-amber-400"
+                              : "text-muted-foreground/30"
+                          }`}
+                        />
+                      ))}
+                    </div>
+
+                    <p className="text-sm text-foreground/90">{rev.comment}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <Features />
