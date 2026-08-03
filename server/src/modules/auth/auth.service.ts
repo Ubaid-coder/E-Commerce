@@ -98,3 +98,35 @@ If you did not request this, please ignore this email.
     message,
   };
 };
+
+export const resetPassword = async (
+  token: string,
+  password: string
+) => {
+  // Hash the token received from URL
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(token)
+    .digest("hex");
+
+  // Find user with valid token
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: new Date() },
+  }).select("+password +passwordResetToken +passwordResetExpires");
+
+  if (!user) {
+    throw new Error("Invalid or expired reset token.");
+  }
+
+  // Set new password
+  user.password = password;
+
+  // Remove reset fields
+  user.passwordResetToken = null;
+  user.passwordResetExpires = null;
+
+  await user.save();
+
+  return;
+};

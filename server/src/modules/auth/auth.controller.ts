@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser } from "./auth.service";
+import { registerUser, loginUser, resetPassword } from "./auth.service";
 import { forgotPassword } from "./auth.service";
 import { sendEmail } from "../../utils/sendEmail";
 
@@ -91,6 +91,41 @@ export const forgotPasswordController = async (
 
   } catch (error) {
    
+
+    res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Something went wrong.",
+    });
+  }
+};
+
+export const resetPasswordController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password is required.",
+      });
+    }
+
+    await resetPassword(token as string, password);
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully.",
+    });
+
+  } catch (error) {
+    console.log(error);
 
     res.status(500).json({
       success: false,
