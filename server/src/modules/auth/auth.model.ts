@@ -7,6 +7,11 @@ export interface IUser extends Document {
   password: string;
   role: "customer" | "admin";
   avator: string;
+
+  // Forgot Password
+  passwordResetToken?: string | null;
+  passwordResetExpires?: Date | null;
+
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -38,14 +43,28 @@ const userSchema = new Schema<IUser>(
       enum: ["customer", "admin"],
       default: "customer",
     },
+
     avator: {
       type: String,
+      default: "",
+    },
 
-    }
+    // Forgot Password
+    passwordResetToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
   },
   {
     timestamps: true,
-    versionKey: false
+    versionKey: false,
   }
 );
 
@@ -53,7 +72,6 @@ userSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
 
   this.password = await bcrypt.hash(this.password, 12);
-
 });
 
 userSchema.methods.comparePassword = async function (
