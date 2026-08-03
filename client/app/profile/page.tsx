@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { getProfile, updateProfile } from "@/services/profile.service";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { forgotPassword } from "@/services/auth.service";
+
 
 interface UserProfile {
   name: string;
@@ -16,6 +18,7 @@ interface UserProfile {
 export default function UserProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [Passwordloading, setPasswordLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const router = useRouter();
   // Controlled form values
@@ -73,11 +76,17 @@ export default function UserProfilePage() {
     }
   };
 
-  const handleChangePasswordClick = () => {
-    // You can replace this with a router push to a password reset page,
-    // or trigger an account verification email request.
-    alert("Redirecting to password security manager...");
-    // router.push("/auth/change-password");
+  const handleChangePasswordClick = async () => {
+    try{
+      setPasswordLoading(true);
+      await forgotPassword(useremail);
+      toast.success("Password reset link sent to your email!");
+    }catch(error){
+      console.error("Error occurred while changing password:", error);
+      toast.error("Failed to send password reset link!");
+    }finally{
+      setPasswordLoading(false);
+    }
   };
 
   if (loading) {
@@ -134,9 +143,9 @@ export default function UserProfilePage() {
           </label>
           <input
             type="email"
-            required
+            readOnly
             value={useremail}
-            onChange={(e) => setUseremail(e.target.value)}
+
             placeholder="jane@example.com"
             className="w-full px-4 py-2.5 text-sm border border-slate-200 bg-slate-50 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-slate-900"
           />
@@ -170,7 +179,8 @@ export default function UserProfilePage() {
             type="button"
             onClick={handleChangePasswordClick}
             variant="outline"
-            className="rounded-xl border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 h-10 px-4 self-start sm:self-auto"
+            className={`${Passwordloading?'bg-slate-300 ':''}cursor-pointer rounded-xl border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-50 h-10 px-4 self-start sm:self-auto`}
+            disabled={Passwordloading}
           >
             Change Password
           </Button>
