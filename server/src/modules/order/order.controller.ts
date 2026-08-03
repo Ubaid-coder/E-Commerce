@@ -8,6 +8,8 @@ import {
   customerOrder
 } from "./order.service";
 
+
+
 interface UserPayload {
   id: string;
   email: string;
@@ -104,12 +106,27 @@ export const getAllorders = async (req: Request, res: Response) => {
 
 export const updateorderStatus = async (req: Request, res: Response) => {
   try {
-    const { status } = req.body;
+    const { status } = req.body ;
 
     const order = await updateOrderStatus(
       req.params.id as string,
       status
     );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (status === "delivered") {
+      order.paymentStatus = "paid";
+    } else if (status === "cancelled") {
+      order.paymentStatus = "failed";
+    }
+
+    await order.save();
 
     res.status(200).json({
       success: true,
