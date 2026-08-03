@@ -12,6 +12,7 @@ import productRouter from "./modules/product/product.route";
 import orderRouter from "./modules/order/order.route";
 import userRoutes from "./modules/users/user.route";
 import reviewRoutes from "./modules/review/review.route";
+import dashboardRoutes from "./modules/dashboard/dashboard.route";
 
 const app: Application = express();
 
@@ -63,6 +64,9 @@ app.use("/api/v1/reviews", reviewRoutes);
 
 // All users
 app.use("/api/v1/users", userRoutes);
+
+//Admin dashboard
+app.use("/api/v1/dashboard", dashboardRoutes);
 
 /**
  * 404 Route Handler
