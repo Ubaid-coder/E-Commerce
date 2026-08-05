@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { CreditCard, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { createStripeCheckoutSession, CheckoutPayload } from "@/services/stripe.service";
+import { createStripeCheckoutSession } from "@/services/sripe.service";
 
 interface StripeCheckoutButtonProps {
-  checkoutData: CheckoutPayload;
+  checkoutData: string;
   disabled?: boolean;
 }
 
