@@ -1,29 +1,29 @@
 import { Request, Response } from "express";
 import { createCheckoutSession, handleStripeWebhook } from "./payment.service";
 
-interface AuthenticatedRequest extends Request {
-  user: {
-    id: string;
-  };
-}
 
 export const createCheckoutSessionController = async (
-  req: AuthenticatedRequest,
+  req: Request,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const { orderId } = req.body;
 
+    const userId = (req as Request & {
+      user: { id: string };
+    }).user.id;
+
     if (!orderId) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Order ID is required.",
       });
+      return;
     }
 
     const session = await createCheckoutSession(
       orderId,
-      req.user.id
+      userId
     );
 
     res.status(200).json({
@@ -32,8 +32,6 @@ export const createCheckoutSessionController = async (
     });
 
   } catch (error) {
-    console.log(error);
-
     res.status(500).json({
       success: false,
       message:
@@ -47,12 +45,13 @@ export const createCheckoutSessionController = async (
 export const stripeWebhookController = async (
   req: Request,
   res: Response
-) => {
+): Promise<void> => {
   try {
     const signature = req.headers["stripe-signature"];
 
     if (!signature) {
-      return res.status(400).send("Missing Stripe Signature");
+      res.status(400).send("Missing Stripe Signature");
+      return;
     }
 
     await handleStripeWebhook(

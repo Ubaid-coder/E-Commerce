@@ -94,7 +94,7 @@ export const handleStripeWebhook = async (
         throw new Error("Order not found.");
       }
 
-      order.paymentStatus = "Paid";
+      order.paymentStatus = "paid";
       order.paymentMethod = "Stripe";
       order.paidAt = new Date();
       await order.save();
