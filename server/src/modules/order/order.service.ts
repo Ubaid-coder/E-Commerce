@@ -29,9 +29,7 @@ interface CreateOrderData {
   paymentMethod:
     | "Cash on Delivery"
     | "Stripe"
-    | "PayPal"
-    | "JazzCash"
-    | "EasyPaisa";
+  
 }
 
 export const createOrder = async (data: CreateOrderData) => {

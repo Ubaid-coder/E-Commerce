@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { createOrder } from "@/services/order.service";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -19,6 +20,7 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { createStripeCheckoutSession } from "@/services/sripe.service";
 
 interface ShippingAddressForm {
   fullName: string;
@@ -36,16 +38,15 @@ export default function ConfirmPaymentPage() {
   const { cart, clearCart } = useCart();
   const [loading, setLoading] = useState(false);
 
-  // Dynamic Shipping Address State with strict initial values
   const [shippingAddress, setShippingAddress] = useState<ShippingAddressForm>({
-    fullName: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    country: "",
+    fullName: "Dua Ghaffar",
+    email: "duaghaffar@gmail.com",
+    phone: "+92 03132629515",
+    address: "L-562 sector-5/c3 north karachi",
+    city: "karachi",
+    state: "sindh",
+    postalCode: "75850",
+    country: "pakistan",
   });
 
   const [formErrors, setFormErrors] = useState<Partial<ShippingAddressForm>>({});
@@ -58,18 +59,15 @@ export default function ConfirmPaymentPage() {
     "Cash on Delivery" | "Stripe" | "PayPal" | "JazzCash" | "EasyPaisa"
   >("Cash on Delivery");
 
-  // Handle controlled input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setShippingAddress((prev) => ({ ...prev, [name]: value }));
 
-    // Clear field-specific error on user typing
     if (formErrors[name as keyof ShippingAddressForm]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  // Strict validation checker
   const validateForm = (): boolean => {
     const errors: Partial<ShippingAddressForm> = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -91,7 +89,6 @@ export default function ConfirmPaymentPage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Calculation formulas
   const itemsPrice = cart.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
@@ -100,21 +97,21 @@ export default function ConfirmPaymentPage() {
   const taxPrice = Number((itemsPrice * 0.05).toFixed(2));
   const totalPrice = Number((itemsPrice + shippingPrice + taxPrice).toFixed(2));
 
-  // Submit Order Handler
+  // Order Submission Logic
   const handleConfirmOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (cart.length === 0) return;
 
-    // Strict validation check before triggering API
     if (!validateForm()) {
-      toast("Please correctly fill in all required shipping fields.",{icon:"ℹ"});
+      toast("Please correctly fill in all required shipping fields.", { icon: "ℹ" });
       return;
     }
 
     try {
       setLoading(true);
 
+      // Construct Order Payload
       const orderPayload = {
         items: cart.map((item) => ({
           product: item._id,
@@ -141,18 +138,29 @@ export default function ConfirmPaymentPage() {
         totalPrice,
       };
 
-      const response = await createOrder([orderPayload]);
+      // 1. ALWAYS Create the Order first in DB
+      const response = await createOrder(orderPayload);
+      const createdOrder = response?.data || response;
+      const createdOrderId = createdOrder?._id;
 
-      if (response?.success || response?.status === "success") {
-        clearCart();
-        router.push(`/order-success/${response.data?._id || response._id}`);
-      } else {
-        toast.error(response?.message || "Failed to process order. Please try again.");
+      if (!createdOrderId) {
+        throw new Error(response?.message || "Failed to create order.");
       }
-    } catch (error) {
-      console.error("Order submission error:", error);
-      alert("An unexpected error occurred. Please try again.");
-    } finally {
+
+      // Clear local shopping cart after order creation
+      clearCart();
+
+      // 2. Route according to payment method
+      if (paymentMethod === "Stripe") {
+        // Request checkout session using the generated Order ID
+        await createStripeCheckoutSession(createdOrderId);
+      } else {
+        // Cash on Delivery or local payments -> Redirect to success screen
+        router.push(`/order-success/${createdOrderId}`);
+      }
+    } catch (error: any) {
+      console.error("Order process error:", error);
+      toast.error(error?.message || "An unexpected error occurred. Please try again.");
       setLoading(false);
     }
   };
@@ -179,7 +187,7 @@ export default function ConfirmPaymentPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Left Column: Input Details */}
+        {/* Left Column: Inputs */}
         <div className="lg:col-span-2 space-y-6">
           
           {/* Shipping Address Inputs */}
@@ -362,10 +370,7 @@ export default function ConfirmPaymentPage() {
             <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 "Cash on Delivery",
-                "Stripe",
-                "PayPal",
-                "JazzCash",
-                "EasyPaisa",
+                "Stripe"
               ].map((method) => (
                 <button
                   key={method}
@@ -451,12 +456,12 @@ export default function ConfirmPaymentPage() {
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Processing Order...
+                    Creating Order & Redirecting...
                   </>
                 ) : (
                   <>
                     <CheckCircle2 className="h-4 w-4" />
-                    Place Order
+                    {paymentMethod === "Stripe" ? "Proceed to Stripe" : "Place Order"}
                   </>
                 )}
               </Button>

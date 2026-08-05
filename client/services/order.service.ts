@@ -2,7 +2,7 @@ import api from './api'
 
 // ===================== Customer =====================
 
-export const createOrder = async (items: any[]) => {
+export const createOrder = async (items: any) => {
   const response = await api.post("/orders", items);
   return response.data;
 };

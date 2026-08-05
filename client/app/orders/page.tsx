@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getMyOrders } from "@/services/order.service";
 import Link from "next/link";
-import { Item } from "@radix-ui/react-select";
 
-// Interface mimicking typical order structure returned from your order service
 interface OrderItem {
     product: {
         _id: string;
@@ -23,10 +21,10 @@ interface Order {
     _id: string;
     items: OrderItem[];
     totalPrice: number;
-    status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
+    status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+    paymentStatus: "pending" | "paid" | "failed";
     createdAt: string;
     paymentMethod: string;
-
 }
 
 export default function MyOrdersPage() {
@@ -38,7 +36,6 @@ export default function MyOrdersPage() {
         const fetchOrders = async () => {
             try {
                 const response = await getMyOrders();
-
                 setOrders(response.data);
             } catch (error) {
                 console.error(error);
@@ -48,20 +45,33 @@ export default function MyOrdersPage() {
         };
 
         fetchOrders();
-        console.log(orders)
     }, []);
 
-    // Helper to color-code statuses in Bloom's palette
+    // Helper to color-code fulfillment statuses
     const getStatusBadgeStyles = (status: Order["status"]) => {
         switch (status) {
-            case "Delivered":
+            case "delivered":
                 return "bg-emerald-50 text-emerald-700 border-emerald-100";
-            case "Processing":
-            case "Shipped":
+            case "processing":
+            case "shipped":
                 return "bg-blue-50 text-blue-700 border-blue-100";
-            case "Pending":
+            case "pending":
                 return "bg-amber-50 text-amber-700 border-amber-100";
-            case "Cancelled":
+            case "cancelled":
+                return "bg-rose-50 text-rose-700 border-rose-100";
+            default:
+                return "bg-slate-50 text-slate-700 border-slate-100";
+        }
+    };
+
+    // Helper to color-code payment statuses
+    const getPaymentStatusBadgeStyles = (paymentStatus: Order["paymentStatus"]) => {
+        switch (paymentStatus) {
+            case "paid":
+                return "bg-emerald-50 text-emerald-700 border-emerald-100";
+            case "pending":
+                return "bg-amber-50 text-amber-700 border-amber-100";
+            case "failed":
                 return "bg-rose-50 text-rose-700 border-rose-100";
             default:
                 return "bg-slate-50 text-slate-700 border-slate-100";
@@ -148,16 +158,28 @@ export default function MyOrdersPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                                {/* Status Badges */}
+                                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end flex-wrap">
                                     <span className="sm:hidden font-semibold text-emerald-600 text-sm">${order.totalPrice}</span>
-                                    <span
-                                        className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeStyles(
-                                            order.status
-                                        )}`}
-                                    >
-                                        {order.status}
+                                    <div className="flex gap-2">
+                                        {/* Order Fulfillment Status */}
+                                        <span
+                                            className={`px-3 py-1 text-xs font-semibold rounded-full border ${getStatusBadgeStyles(
+                                                order.status
+                                            )}`}
+                                        >
+                                            {order.status}
+                                        </span>
 
-                                    </span>
+                                        {/* Payment Status Badge */}
+                                        <span
+                                            className={`px-3 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusBadgeStyles(
+                                                order.paymentStatus
+                                            )}`}
+                                        >
+                                            Payment: {order.paymentStatus}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -184,15 +206,13 @@ export default function MyOrdersPage() {
                                                 <span className="text-xs text-slate-500">
                                                     Unit Price: ${item.product.price.toFixed(2)}
                                                 </span>
-                                                {
-                                                    order.status.charAt(0).toUpperCase() + order.status.slice(1) === "Delivered" && (
-                                                        <Link href={`/reviews/${item.product._id}`} className="text-xs text-emerald-600 font-medium hover:underline">
-                                                            Review
-                                                        </Link>
-                                                    )
-                                                }
+                                                {order.status === "delivered" && (
+                                                    <Link href={`/reviews/${item.product._id}`} className="text-xs text-emerald-600 font-medium hover:underline">
+                                                        Review
+                                                    </Link>
+                                                )}
                                                 <span className="text-sm font-semibold text-slate-800">
-                                                    ${(item.product.price * item.quantity)}
+                                                    ${(item.product.price * item.quantity).toFixed(2)}
                                                 </span>
                                             </div>
                                         </div>

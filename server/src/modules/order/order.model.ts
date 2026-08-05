@@ -9,6 +9,7 @@ export interface IShippingAddress {
   state: string;
   postalCode: string;
   country: string;
+  stripePaymentIntentId?: string;
 }
 export interface IOrderItem {
   product: Types.ObjectId;
@@ -101,6 +102,10 @@ const shippingAddressSchema = new Schema<IShippingAddress>(
       required: true,
       trim: true,
     },
+    stripePaymentIntentId: {
+      type: String,
+      default: null,
+    },
   },
   {
     _id: false,
@@ -176,10 +181,7 @@ const orderSchema = new Schema<IOrder>(
       required: true,
       enum: [
         "Cash on Delivery",
-        "Stripe",
-        "PayPal",
-        "JazzCash",
-        "EasyPaisa",
+        "Stripe"
       ],
     },
 

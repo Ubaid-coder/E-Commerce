@@ -210,6 +210,9 @@
   "strip-json-comments": "^2.0.1",
   
     
+  "stripe": "^22.4.0",
+  
+    
   "supports-preserve-symlinks-flag": "^1.0.0",
   
     

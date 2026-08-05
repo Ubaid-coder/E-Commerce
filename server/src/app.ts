@@ -13,6 +13,7 @@ import orderRouter from "./modules/order/order.route";
 import userRoutes from "./modules/users/user.route";
 import reviewRoutes from "./modules/review/review.route";
 import dashboardRoutes from "./modules/dashboard/dashboard.route";
+import paymentRoutes from "./modules/payment/payment.route";
 
 const app: Application = express();
 
@@ -32,6 +33,10 @@ app.use(
 );
 
 app.use(morgan("dev"));
+app.use(
+  "/api/v1/payment/webhook",
+  express.raw({ type: "application/json" })
+);
 
 app.use(express.json());
 
@@ -67,6 +72,12 @@ app.use("/api/v1/users", userRoutes);
 
 //Admin dashboard
 app.use("/api/v1/dashboard", dashboardRoutes);
+
+//Payment route
+
+
+app.use("/api/v1/payment", paymentRoutes);
+
 
 /**
  * 404 Route Handler
